@@ -74,7 +74,7 @@ def show_progress(current, total):
     print(f"Processing file {current}/{total}: {progress:.2f}% complete")
 
 
-def transcribe_and_save_vtt(wav_files, output_vtt_path, resume_file):
+def transcribe_and_save_vtt(wav_files, output_vtt_path, resume_file, chunk_length_seconds):
     all_captions = []
     total_seconds = 0
 
@@ -98,7 +98,8 @@ def transcribe_and_save_vtt(wav_files, output_vtt_path, resume_file):
             caption.end_seconds += total_seconds
             caption.wav_file = wav_file
 
-        total_seconds += captions[-1].end_seconds
+        total_seconds += chunk_length_seconds
+
         all_captions.extend(captions)
 
         # Save resume data
@@ -121,18 +122,6 @@ def transcribe_and_save_vtt(wav_files, output_vtt_path, resume_file):
     if os.path.exists(resume_file):
         os.remove(resume_file)
 
-def main():
-    original_wav_file = "dist.wav"
-    output_dir = "/tmp/split_wavs"
-    chunk_length_seconds = 600
-
-    wav_files = get_wav_files(original_wav_file, output_dir, chunk_length_seconds)
-
-    output_vtt_path = "output.vtt"
-    resume_file = "./tmp/resume.json"
-
-    transcribe_and_save_vtt(wav_files, output_vtt_path, resume_file)
-
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Transcribe WAV to VTT")
     parser.add_argument("--input", required=True, help="Path to the input WAV file")
@@ -144,4 +133,4 @@ if __name__ == "__main__":
 
     wav_files = get_wav_files(args.input, "split_wavs", args.chunk_length)
 
-    transcribe_and_save_vtt(wav_files, args.output, args.resume)
+    transcribe_and_save_vtt(wav_files, args.output, args.resume, args.chunk_length)
