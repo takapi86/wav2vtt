@@ -1,4 +1,4 @@
-# transcribe_wav_to_vtt
+# wav2vtt
 
 ```
 # python3 transcribe_wav_to_vtt.py -h
