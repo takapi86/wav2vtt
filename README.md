@@ -12,5 +12,5 @@ optional arguments:
   --output OUTPUT       Path to the output VTT file
   --resume RESUME       Path to the resume file (default: resume.json)
   --chunk_length CHUNK_LENGTH
-                        Length of chunks to split WAV file (in seconds, default: 600)
+                        Length of chunks to split WAV file (in seconds, default: 30)
 ```
