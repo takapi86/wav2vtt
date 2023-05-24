@@ -11,6 +11,9 @@ RUN pip install torch==1.12.1+cu116 torchvision==0.13.1+cu116 torchaudio==0.12.1
 
 RUN pip install packaging wheel pydub
 
+RUN apt update && apt install ffmpeg
+RUN pip install -U openai-whisper
+
 WORKDIR /app
 
 COPY . .

@@ -1,3 +1,4 @@
+import whisper
 import os
 import json
 import sys
@@ -6,6 +7,9 @@ import reazonspeech as rs
 import pydub
 import os
 import argparse
+
+# Load the Whisper model
+model = whisper.load_model("base")
 
 from dataclasses import dataclass
 
@@ -91,16 +95,23 @@ def transcribe_and_save_vtt(wav_files, output_vtt_path, resume_file, chunk_lengt
         # Show progress
         show_progress(idx + 1, len(wav_files))
 
-        captions = list(rs.transcribe(wav_file))
+        # Load audio and pad/trim it to fit 30 seconds
+        audio = whisper.load_audio(wav_file)
+        audio = whisper.pad_or_trim(audio)
 
-        for caption in captions:
-            caption.start_seconds += total_seconds
-            caption.end_seconds += total_seconds
-            caption.wav_file = wav_file
+        # Make log-Mel spectrogram and move to the same device as the model
+        mel = whisper.log_mel_spectrogram(audio).to(model.device)
+
+        # Decode the audio
+        options = whisper.DecodingOptions()
+        result = whisper.decode(model, mel, options)
+
+        # Create a Caption object
+        caption = Caption(total_seconds, total_seconds + chunk_length_seconds, result.text, wav_file)
 
         total_seconds += chunk_length_seconds
 
-        all_captions.extend(captions)
+        all_captions.append(caption)
 
         # Save resume data
         resume_data = {
@@ -127,7 +138,7 @@ if __name__ == "__main__":
     parser.add_argument("--input", required=True, help="Path to the input WAV file")
     parser.add_argument("--output", required=True, help="Path to the output VTT file")
     parser.add_argument("--resume", default="resume.json", help="Path to the resume file (default: resume.json)")
-    parser.add_argument("--chunk_length", type=int, default=600, help="Length of chunks to split WAV file (in seconds, default: 600)")
+    parser.add_argument("--chunk_length", type=int, default=30, help="Length of chunks to split WAV file (in seconds, default: 600)")
 
     args = parser.parse_args()
 
